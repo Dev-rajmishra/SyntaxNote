@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import WelcomePage from "@/components/WelcomePage/WelcomePage";
+import PencilLoader from "@/components/Loader/PencilLoader";
 
 interface StickyNote {
   id: number;
@@ -93,10 +94,10 @@ export default function EntryPage() {
   // Flip page handler
   const handleFlip = () => {
     setIsFlipped(true);
-    // After flip animation completes (1.2s), redirect to desk workspace
+    // After flip animation completes (1.3s), redirect to desk workspace
     setTimeout(() => {
       router.push("/home");
-    }, 1300);
+    }, 700);
   };
 
   // Coordinates helper
@@ -170,7 +171,7 @@ export default function EntryPage() {
 
   return (
     <div
-      className="h-full w-full overflow-hidden flex flex-col justify-center select-none relative bg-slate-900 text-slate-100"
+      className="h-full w-full overflow-hidden flex flex-col justify-center select-none relative bg-[#fcfaf2] text-slate-800"
       onMouseMove={handleNoteDrag}
       onTouchMove={handleNoteDrag}
       onMouseUp={handleNoteEndDrag}
@@ -203,8 +204,8 @@ export default function EntryPage() {
               style={{
                 transform: isFlipped ? "rotateY(-180deg)" : "rotateY(0deg)",
                 boxShadow: isFlipped
-                  ? "-15px 25px 50px -10px rgba(0, 0, 0, 0.6)"
-                  : "15px 25px 50px -10px rgba(0, 0, 0, 0.6)",
+                  ? "-15px 25px 50px -10px rgba(0, 0, 0, 0.15)"
+                  : "15px 25px 50px -10px rgba(0, 0, 0, 0.15)",
               }}
             >
               {/* FRONT FACE (Welcome cover) */}
@@ -228,11 +229,11 @@ export default function EntryPage() {
                   backfaceVisibility: "hidden",
                 }}
               >
-                <div className="w-full h-full bg-slate-950 flex items-center justify-center">
-                  <div className="text-center font-caveat text-4xl text-slate-400">
-                    Opening library desk... 📖
-                  </div>
-                </div>
+                <PencilLoader
+                  text="Opening home desk..."
+                  subtitle=""
+                  className="absolute inset-0 w-full h-full border border-slate-200 rounded-2xl shadow-inner z-10 paper-texture"
+                />
               </div>
             </div>
           </div>
