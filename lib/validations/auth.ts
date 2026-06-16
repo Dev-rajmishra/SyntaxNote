@@ -10,3 +10,6 @@ export const SignUpSchema = z.object({
   password: z.string().min(8),
   name: z.string().min(2),
 });
+
+export type SignInIndex = z.infer<typeof SignInSchema>;
+export type SignUpIndex = z.infer<typeof SignUpSchema>;
