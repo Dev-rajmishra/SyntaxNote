@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useTransition } from "react";
 import { usePathname } from "next/navigation";
+import { signOut } from "@/app/(app)/api/v1/auth/signOut/route";
 
 export interface NavigationSection {
   title: string;
@@ -27,41 +28,29 @@ interface HeadderProps {
   onNavigate?: (href: string) => void;
   activeHref?: string;
   user?: string | null;
-  onAuthClick?: () => void;
-  onSignOut?: () => void;
 }
 
 export default function Headder({
   onNavigate,
   activeHref = "",
   user = null,
-  onAuthClick = () => {},
-  onSignOut,
 }: HeadderProps) {
   const pathname = usePathname();
   const currentPath = activeHref || pathname || "";
-  const [userState, setUserState] = useState<string | null>(user);
 
-  useEffect(() => {
-    const savedUser = localStorage.getItem("syntaxnote_user");
-    if (savedUser) {
-      setUserState(savedUser);
-    }
-  }, [user]);
-
-  const handleSignOutInternal = () => {
-    localStorage.removeItem("syntaxnote_user");
-    localStorage.removeItem("username");
-    setUserState(null);
-    if (onSignOut) {
-      onSignOut();
-    }
-    window.location.href = "/";
-  };
-
+  // We use useTransition to prevent the UI from freezing while the server action runs
+  const [isPending, startTransition] = useTransition();
   const [showHeader, setShowHeader] = useState<boolean>(false);
   const [isHovered, setIsHovered] = useState<boolean>(false);
 
+
+  const handleSignOutInternal = () => {
+    startTransition(async () => {
+      await signOut();
+    });
+  };
+
+  
   useEffect(() => {
     let timeoutId: number;
 
@@ -95,8 +84,11 @@ export default function Headder({
   }, [isHovered, showHeader]);
 
   const handleNavClick = (e: React.MouseEvent, href: string) => {
+    e.preventDefault(); // Good practice for custom routing
     if (onNavigate) {
-      window.location.href = `/${href}`
+      onNavigate(href);
+    } else {
+      window.location.href = `${process.env.NEXT_PUBLIC_SITE_URL}/${href}`;
     }
   };
 
@@ -150,7 +142,10 @@ export default function Headder({
         />
 
         {/* Brand name */}
-        <a href="/" className="z-10 flex items-center select-none mr-5 pt-1 cursor-pointer">
+        <a
+          href="/"
+          className="z-10 flex items-center select-none mr-5 pt-1 cursor-pointer"
+        >
           <span className="font-caveat font-bold text-2xl text-slate-800 tracking-wide drop-shadow-[0_0.5px_0.5px_rgba(255,255,255,0.9)]">
             SyntaxNote
           </span>
@@ -196,26 +191,28 @@ export default function Headder({
 
           {/* User Auth Section */}
           <div className="h-4 w-px bg-slate-300 mx-2" />
-          {userState ? (
+
+          {user ? (
             <div className="flex items-center gap-2">
               <span
                 className="font-caveat font-bold text-violet-700 text-sm px-1.5 py-0.5 rounded border border-purple-300 bg-purple-50/50 -rotate-1 shadow-[0_1px_1px_rgba(0,0,0,0.05)]"
-                style={{
-                  textShadow: "0 0.5px 0.5px rgba(255,255,255,0.9)",
-                }}
+                style={{ textShadow: "0 0.5px 0.5px rgba(255,255,255,0.9)" }}
               >
-                ✏️ {userState}
+                ✏️ {user}
               </span>
               <button
                 onClick={handleSignOutInternal}
-                className="font-patrick text-[13px] text-rose-700 hover:text-rose-900 cursor-pointer hover:underline"
+                disabled={isPending}
+                className="font-patrick text-[13px] text-rose-700 hover:text-rose-900 cursor-pointer hover:underline disabled:opacity-50"
               >
-                [Sign Out]
+                {isPending ? "[Leaving...]" : "[Sign Out]"}
               </button>
             </div>
           ) : (
             <button
-              onClick={() => {window.location.href = "/sign-in"}}
+              onClick={() => {
+                window.location.href = "/sign-in";
+              }}
               className="
                 relative px-3 py-0.5 bg-[#e0f2fe]/90 hover:bg-[#bae6fd] text-sky-800 border-x-2 border-dashed border-sky-400/40
                 font-patrick text-[13px] font-bold shadow-sm transition-all cursor-pointer -rotate-1
