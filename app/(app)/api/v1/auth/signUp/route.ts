@@ -29,14 +29,17 @@ export async function signUp(formData: FormData) {
     password,
     options: {
       data: { name },
-      emailRedirectTo: `${process.env.NEXT_PUBLIC_SUPABASE_URL}/auth/callback`,
+      emailRedirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/auth/callback`,
     },
   });
 
   if (error) {
-    redirect("error");
+    return {
+      success: false,
+      message: error.message,
+    };
   }
 
   revalidatePath("/", "layout");
   redirect("/check-email");
-}
+};
