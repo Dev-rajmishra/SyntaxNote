@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useTransition } from "react";
 import { usePathname } from "next/navigation";
-import { signOut } from "@/app/(app)/api/v1/auth/signOut/route";
+import { signOut } from "@/app/(app)/api/v1/auth/signOut/action";
 
 export interface NavigationSection {
   title: string;
